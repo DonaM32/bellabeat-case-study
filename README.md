@@ -39,6 +39,15 @@ This project was completed as part of the **Google Data Analytics Professional C
 - Sleep efficiency is consistent; longer sleep ≠ higher activity
 - Heart rate increases on more active days, but trends vary
 
+# 📊 Sample Visualizations
+
+<img width="239" alt="image" src="https://github.com/user-attachments/assets/6924208b-115e-428e-9690-627aa15a1cf6" />
+<img width="216" alt="image" src="https://github.com/user-attachments/assets/6d959796-74a8-452c-9360-d66a5feeb998" />
+<img width="230" alt="image" src="https://github.com/user-attachments/assets/9324413d-6cdb-4f3b-b5fe-c21afef6e147" />
+<img width="218" alt="image" src="https://github.com/user-attachments/assets/29d86757-3c41-48a0-a6ce-a4a3059b671e" />
+<img width="208" alt="image" src="https://github.com/user-attachments/assets/e6cbe5fc-bb41-410c-813d-42a51688c6f3" />
+
+
 ## 💡 Recommendations
 
 - Promote daily step goals and challenges in the Bellabeat app
