@@ -21,7 +21,7 @@ This project was completed as part of the **Google Data Analytics Professional C
 ## 🛠️ Tools & Libraries
 
 - **R**, **RStudio**
-- `tidyverse`, `lubridate`, `ggplot2`, `gridExtra`
+- `tidyverse`, `lubridate`, `ggplot2`
 - **R Markdown** for full analysis and report
 
 ## 📂 Files Included
