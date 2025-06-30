@@ -1,0 +1,240 @@
+
+---
+title: "Bellabeat Case Study: Data Analysis & Business Insights"
+author: "Dona Manojlovic"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+  pdf_document:
+    toc: true
+    number_sections: true
+    keep_tex: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(gridExtra)
+```
+```{r load-data, echo=TRUE}
+load("merged_data.RData")
+```
+
+# Introduction
+
+Bellabeat, a wellness technology company, aims to unlock insights from smart device usage data to guide marketing strategy for its mobile app. This analysis uses Fitbit data to explore trends in activity, sleep, and heart rate.
+
+# 1. Activity Overview
+
+## 1.1 Summary Statistics
+```{r}
+summary_activity <- merged_data %>%
+  summarise(
+    avg_steps = round(mean(total_steps, na.rm = TRUE), 0),
+    max_steps = max(total_steps, na.rm = TRUE),
+    min_steps = min(total_steps, na.rm = TRUE),
+    avg_distance = round(mean(total_distance, na.rm = TRUE), 2),
+    avg_calories = round(mean(calories, na.rm = TRUE), 0),
+    max_calories = max(calories, na.rm = TRUE),
+    min_calories = min(calories, na.rm = TRUE)
+  )
+knitr::kable(summary_activity, caption = "Summary of User Activity")
+```
+
+## 1.2 📊 Average Steps by Weekday
+```{r}
+merged_data <- merged_data %>% mutate(weekday = weekdays(date))
+p1 <- merged_data %>%
+  group_by(weekday) %>%
+  summarise(avg_steps = mean(total_steps, na.rm = TRUE)) %>%
+  ggplot(aes(x = reorder(weekday, -avg_steps), y = avg_steps)) +
+  geom_bar(stat = "identity", fill = "#69b3a2") +
+  labs(title = "Average Steps by Weekday", x = "Weekday", y = "Steps") +
+  theme_minimal()
+p1
+```
+
+📌 **Insight:** 
+
+Saturday and Thursday were the most active days, while Sunday had the lowest average step count.
+
+
+## 1.3 📊 Steps vs Calories Burned
+```{r}
+p2 <- merged_data %>%
+  filter(!is.na(total_steps), !is.na(calories)) %>%
+  ggplot(aes(x = total_steps, y = calories)) +
+  geom_point(alpha = 0.5, color = "#1f78b4") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkblue") +
+  labs(title = "Steps vs Calories Burned", x = "Total Steps", y = "Calories") +
+  theme_minimal()
+p2
+```
+
+📌 **Insight:** 
+
+As shown in the scatter plot above, there is clear positive linear relationship: more steps generally lead to higher calories burn, which aligns with expectations. The linear trendline confirms this correlation.
+
+### 📌 Correlation Test: Steps vs Calories Burned
+```{r}
+result <- cor.test(merged_data$total_steps, merged_data$calories, method = "pearson")
+print(result)
+```
+The test showed a moderate positive correlation between total steps and calories burned (r = 0.52, p < 0.001).
+
+This confirms that as users take more steps, they tend to burn more calories—supporting the link between physical activity and energy expenditure.
+
+# 2. Sleep Patterns
+
+## 2.1 Sleep Summary
+```{r}
+summary_sleep <- merged_data %>%
+  summarise(
+    avg_minutes_asleep = mean(total_minutes_asleep, na.rm = TRUE),
+    avg_time_in_bed = mean(total_time_in_bed, na.rm = TRUE),
+    min_sleep = min(total_minutes_asleep, na.rm = TRUE),
+    max_sleep = max(total_minutes_asleep, na.rm = TRUE)
+  )
+knitr::kable(summary_sleep, caption = "Summary of Sleep Duration")
+```
+
+## 2.2 📊 Sleep Duration Histogram
+```{r}
+p3 <- merged_data %>%
+  filter(!is.na(total_minutes_asleep), total_minutes_asleep > 0) %>%
+  ggplot(aes(x = total_minutes_asleep)) +
+  geom_histogram(binwidth = 30, fill = "#2c7fb8", color = "white") +
+  labs(title = "Distribution of Sleep Duration", x = "Minutes Asleep", y = "Count") +
+  theme_minimal()
+p3
+```
+
+📌 **Insight:** 
+
+Most user sleep between 6 to 8hours per night, though some sleep less than 5 or more than 10 hours.
+
+
+## 2.3 📊 Sleep Efficiency Over Time
+```{r sleeep-efficiency-plot, echo=TRUE}
+p4 <- merged_data %>% 
+  mutate(sleep_efficiency = total_minutes_asleep/total_time_in_bed)
+
+p4 %>%
+  group_by(date) %>%
+  summarise(avg_efficiency = mean(sleep_efficiency, na.rm = TRUE)) %>%
+  ggplot(aes(x = date, y = avg_efficiency)) +
+  geom_line(color = "#ff6f61") +
+  labs(title = "Average Sleep Efficiency Over Time", x = "Date", y = "Efficiency",
+      caption = "Source: Fitbit Dataset") +
+  theme_minimal()
+```
+
+**Insight:** Sleep efficiency is relatively stable for most users, suggesting consistent quality of sleep.
+
+
+## 2.4 📊 Steps vs Total Minutes Asleep
+```{r}
+p5 <- merged_data %>%
+  filter(!is.na(total_steps), !is.na(total_minutes_asleep),
+         total_steps > 0, total_minutes_asleep > 0) %>%
+  ggplot(aes(x = total_steps, y = total_minutes_asleep)) +
+  geom_point(alpha = 0.5, color = "#1b9e77") +
+  geom_smooth(method = "lm", se = FALSE, color = "#d95f02") +
+  labs( title = "Steps vs Sleep Duration", x = "Total Steps", y = "Minutes Asleep",
+      caption = "Source: Fitbit Dataset") +
+  theme_minimal()
+p5
+```
+
+### 📌 Correlation Test: Steps vs Sleep
+```{r}
+result <- cor.test(merged_data$total_steps, merged_data$total_minutes_asleep, method = "pearson")
+print(result)
+```
+
+A Pearson correlation test showed a weak negative correlation between total steps and sleep duration (r = -0.086, p < 0.001), based on over 1.6 million records.
+
+This suggests that users who take more steps may slightly sleep less, though the relationship is weak.
+
+
+# 3. Heart Rate Trends
+
+## 3.1 Summary Heart Rate by Day
+```{r}
+summary_hr <- merged_data %>%
+  group_by(date) %>%
+  summarise(avg_hr = mean(avg_hr, na.rm = TRUE)) %>%
+  head(10)
+knitr::kable(summary_hr, caption = "Sample of Average Heart Rate Over Time")
+```
+
+## 3.2 📊 Heart Rate Over Time
+```{r}
+p6 <- merged_data %>%
+  group_by(date) %>%
+  summarise(avg_hr = mean(avg_hr, na.rm = TRUE)) %>%
+  ggplot(aes(x = date, y = avg_hr)) +
+  geom_line(color = "#fc8d62", linewidth = 1) +
+  labs(title = "Average Daily Heart Rate", x = "Date", y = "Heart Rate (bpm)") +
+  theme_minimal()
+p6
+```
+
+📌 **Insight:** 
+
+The average daily heart rate across users remained relatively stable over time, with minor fluctuations from day to day. This suggests that most users had a consistent resting or average heart rate, which may reflect regular activity levels or overall cardiovascular health.
+
+However, slight variations could be influenced by:
+
+* Increased physical activity on certain days
+* Sleep quality and recovery
+* External factors like stress or hydration
+
+
+## 3.3 📊 Steps vs Heart Rate
+```{r}
+p7 <- merged_data %>%
+  filter(!is.na(total_steps), !is.na(avg_hr)) %>%
+  ggplot(aes(x = total_steps, y = avg_hr)) +
+  geom_point(alpha = 0.5, color = "#1f78b4") +
+  geom_smooth(method = "lm", se = FALSE, color = "#e34a33") +
+  labs(title = "Steps vs Average Heart Rate", x = "Total Steps", y = "Avg HR (bpm)") +
+  theme_minimal()
+p7
+```
+
+📌 **Insight:** 
+
+A week negative correlation exist, more active users tend to have slightly lower average heart rates.
+
+
+### 📌 Correlation Test: Steps vs Heart Rate
+```{r}
+result <- cor.test(merged_data$total_steps, merged_data$avg_hr, method = "pearson")
+print(result)
+```
+A Pearson correlation test revealed a weak negative correlation between total steps and average heart rate (r = -0.31, p < 0.001).
+
+This indicates that more active users may have slightly lower average heart rates, potentially reflecting better cardiovascular fitness.
+
+
+# 4. Business Recommendations
+
+- Encourage users to set and meet step goals with daily challenges
+- Provide smart sleep insights based on consistency
+- Use heart rate patterns to personalize workout suggestions
+- Introduce weekly summary insights to motivate users
+
+# 5. Conclusion
+
+This analysis of Fitbit data reveals key trends in user behavior that Bellabeat can use to enhance its smart welness app. By aligning app features with user activity, sleep, and heart rate patterns, Bellabeat has the opportunity to improve user retention, boost engagement, and support healthier outcomes for its customers.
+
+# 6. 📚 References
+
+- Arash, N. (2016). *FitBit Fitness Tracker Data*. Kaggle. Retrieved from: [https://www.kaggle.com/datasets/arashnic/fitbit](https://www.kaggle.com/datasets/arashnic/fitbit)
+
+- Google. (2021). *Google Data Analytics Professional Certificate*. Coursera. Retrieved from: [https://www.coursera.org/professional-certificates/google-data-analytics](https://www.coursera.org/professional-certificates/google-data-analytics)
