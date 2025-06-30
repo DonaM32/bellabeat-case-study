@@ -69,4 +69,10 @@ rmarkdown::render("Bellabeat_Case_Study_Analysis.Rmd")
 
 ---
 
+## References
+
+- Arash, N. (2016). *FitBit Fitness Tracker Data*. Kaggle. Retrieved from: [https://www.kaggle.com/datasets/arashnic/fitbit](https://www.kaggle.com/datasets/arashnic/fitbit)
+
+- Google. (2021). *Google Data Analytics Professional Certificate*. Coursera. Retrieved from: [https://www.coursera.org/professional-certificates/google-data-analytics](https://www.coursera.org/professional-certificates/google-data-analytics)
+
 📬 **Let’s connect!** If you're reviewing this project on GitHub or Kaggle, feel free to leave feedback or suggestions.
